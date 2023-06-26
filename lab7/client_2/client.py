@@ -1,3 +1,4 @@
+import subprocess
 import sys
 import socket
 import selectors
@@ -7,44 +8,34 @@ import types
 HOST = 'localhost'
 PORT = 5110
 
-data = " ".join(sys.argv[1:])
+import socket
+import sys
+
 
 # Create a socket (SOCK_STREAM means a TCP socket)
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
     # Connect to server and send data
     sock.connect((HOST, PORT))
-    sock.sendall(bytes(data + "\n", "utf-8"))
+    sock.sendall(b'Cert request')
 
-    # Receive data from the server and shut down
-    received = str(sock.recv(1024), "utf-8")
+    data = sock.recv(4096)
+    f = open('extensions.cnf', 'wb+')
+    f.write(data)
+    f.close()
+    subprocess.run('openssl genpkey -algorithm RSA -out leaf_keypair.pem')
+    sock.sendall(open('leaf_keypair.pem', 'rb').read())
 
-print("Sent:     {}".format(data))
-print("Received: {}".format(received))
+    f = open('cert.pem', 'wb+')
+    f.write(sock.recv(4096))
+    f.close()
 
-# with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sk:
-#     sk.connect((HOST, PORT))
-#     print('Press 1 to receive certificate, press 2 to send file')
-#     a = input()
-#     if a == '1':
-#         data = b'Cert request'
-#         sk.sendall(data)
-#         cert_data = b''
-#         while True:
-#             part = sk.recv(1024)
-#             cert_data += part
-#             if len(part) < 1024:
-#                 break
-#         f = open('cert.pem', 'wb+')
-#         f.write(cert_data)
-#         f.close()
-#     elif a == '2':
-#         data = b'filename:cert.pem'
-#         sk.sendall(data)
-#         f = open('cert.pem', 'rb')
-#         data = f.read()
-#         f.close()
-#         sk.sendall(data)
-#     # else:
-#     # file = open('Facial_Animation_-_RimhammerDwarves.xml', 'rb')
-#     # data = file.read()
-#     # file.close()
+    sock.sendall(b'Requesting peers')
+    peers_resp = sock.recv(1024)
+    peers_str = peers_resp.decode('utf-8').split(',')
+    peers = []
+    for i in range(len(peers_str)):
+        if peers_str[i] == '':
+            del peers_str[i]
+        else:
+            peers.append(int(peers_str[i]))
+    print(type(peers))
