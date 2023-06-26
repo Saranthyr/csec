@@ -15,11 +15,24 @@ def generate_points(a, b, p):
 
     return points
 
+def isprime(num):
+    for n in range(2,int(num**0.5)+1):
+        if num%n==0:
+            return False
+    return True
+
+
 
 print('Enter the parameters for equation')
 a = int(input('Parameter a\n'))
 b = int(input('Parameter b\n'))
-num_pts = int(input('Number of points\n'))
+
+while True:
+    num_pts = int(input('Number of points (prime number)\n'))
+    if not isprime(num_pts):
+        print("Incorrect number - not prime\n")
+    else:
+        break
 
 points = generate_points(a, b, num_pts)
 print("Total points:", len(points))
