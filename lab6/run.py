@@ -28,7 +28,7 @@ a = int(input('Parameter a\n'))
 b = int(input('Parameter b\n'))
 
 while True:
-    num_pts = int(input('Number of points (prime number)\n'))
+    num_pts = int(input('Parameter p (prime number)\n'))
     if not isprime(num_pts):
         print("Incorrect number - not prime\n")
     else:
